@@ -309,7 +309,7 @@ class CommandRegistry {
 			require('./types/message'),
 			require('./types/command'),
 			require('./types/group'),
-			require('./types/group')
+			require('./types/guild')
 		]);
 		return this;
 	}
