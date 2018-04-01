@@ -52,37 +52,34 @@ module.exports = class HelpCommand extends Command {
 
 				const messages = [];
 				try {
-					messages.push(await msg.direct('', {
-						embed: {
-							color: msg.guild ? msg.guild.members.get(this.client.user.id).displayColor : 14827841,
-							description: help
-						}
+					messages.push(await msg.embed({
+						color: msg.guild ? msg.member.displayColor : 16711749,
+						description: help
 					}));
-					if(msg.channel.type !== 'dm') messages.push(await msg.reply('Sent you a DM with information.'));
 				} catch(err) {
 					messages.push(await msg.embed({
-						color: msg.guild ? msg.guild.members.get(this.client.user.id).displayColor : 14827841,
-						decription: 'Unable to send you the help DM. You probably have DMs disabled.'
-					}, '', { reply: msg.author }));
+						color: msg.guild ? msg.member.displayColor : 16711749,
+						decription: 'Unable to send you the help message.'
+					}, '', { reply: this.client.user }));
 				}
 				return messages;
 			} else if(commands.length > 15) {
 				return msg.embed({
-					color: msg.guild ? msg.guild.members.get(this.client.user.id).displayColor : 14827841,
+					color: msg.guild ? msg.member.displayColor : 16711749,
 					description: 'Multiple commands found. Please be more specific.'
-				}, '', { reply: msg.author });
+				}, '', { reply: this.client.user });
 			} else if(commands.length > 1) {
 				return msg.embed({
-					color: msg.guild ? msg.guild.members.get(this.client.user.id).displayColor : 14827841,
+					color: msg.guild ? msg.member.displayColor : 16711749,
 					description: disambiguation(commands, 'commands')
-				}, '', { reply: msg.author });
+				}, '', { reply: this.client.user });
 			} else {
 				return msg.embed({
-					color: msg.guild ? msg.guild.members.get(this.client.user.id).displayColor : 14827841,
+					color: msg.guild ? msg.member.displayColor : 16711749,
 					description: `Unable to identify command. Use ${msg.usage(
 						null, msg.channel.type === 'dm' ? null : undefined, msg.channel.type === 'dm' ? null : undefined
 					)} to view the list of all commands.`
-				}, '', { reply: msg.author });
+				}, '', { reply: this.client.user });
 			}
 		} else {
 			const messages = [];
@@ -110,17 +107,13 @@ module.exports = class HelpCommand extends Command {
 			`);
 
 				for(const part in splitTotal) {
-					messages.push(await msg.direct('', { // eslint-disable-line no-await-in-loop
-						embed: {
-							color: msg.guild ? msg.guild.members.get(this.client.user.id).displayColor : 14827841,
-							description: splitTotal[part]
-						}
+					messages.push(await msg.embed({ // eslint-disable-line no-await-in-loop
+						color: msg.guild ? msg.member.displayColor : 16711749,
+						description: splitTotal[part]
 					}));
 				}
-
-				if(msg.channel.type !== 'dm') messages.push(await msg.reply('Sent you a DM with information.'));
 			} catch(err) {
-				messages.push(await msg.reply('Unable to send you the help DM. You probably have DMs disabled.'));
+				messages.push(await msg.reply('Unable to send you the help message.'));
 			}
 			return messages;
 		}
