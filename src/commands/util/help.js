@@ -1,4 +1,5 @@
-const { stripIndents, oneLine } = require('common-tags');
+const discord = require('discord.js');
+const {	stripIndents, oneLine } = require('common-tags');
 const Command = require('../base');
 const { disambiguation } = require('../../util');
 
@@ -17,14 +18,12 @@ module.exports = class HelpCommand extends Command {
 			examples: ['help', 'help prefix'],
 			guarded: true,
 
-			args: [
-				{
-					key: 'command',
-					prompt: 'Which command would you like to view the help for?',
-					type: 'string',
-					default: ''
-				}
-			]
+			args: [{
+				key: 'command',
+				prompt: 'Which command would you like to view the help for?',
+				type: 'string',
+				default: ''
+			}]
 		});
 	}
 
@@ -53,48 +52,72 @@ module.exports = class HelpCommand extends Command {
 
 				const messages = [];
 				try {
-					messages.push(await msg.direct(help));
+					messages.push(await msg.direct('', {
+						embed: {
+							color: msg.guild ? msg.guild.members.get(this.client.user.id).displayColor : 14827841,
+							description: help
+						}
+					}));
 					if(msg.channel.type !== 'dm') messages.push(await msg.reply('Sent you a DM with information.'));
 				} catch(err) {
-					messages.push(await msg.reply('Unable to send you the help DM. You probably have DMs disabled.'));
+					messages.push(await msg.embed({
+						color: msg.guild ? msg.guild.members.get(this.client.user.id).displayColor : 14827841,
+						decription: 'Unable to send you the help DM. You probably have DMs disabled.'
+					}, '', { reply: msg.author }));
 				}
 				return messages;
 			} else if(commands.length > 15) {
-				return msg.reply('Multiple commands found. Please be more specific.');
+				return msg.embed({
+					color: msg.guild ? msg.guild.members.get(this.client.user.id).displayColor : 14827841,
+					description: 'Multiple commands found. Please be more specific.'
+				}, '', { reply: msg.author });
 			} else if(commands.length > 1) {
-				return msg.reply(disambiguation(commands, 'commands'));
+				return msg.embed({
+					color: msg.guild ? msg.guild.members.get(this.client.user.id).displayColor : 14827841,
+					description: disambiguation(commands, 'commands')
+				}, '', { reply: msg.author });
 			} else {
-				return msg.reply(
-					`Unable to identify command. Use ${msg.usage(
+				return msg.embed({
+					color: msg.guild ? msg.guild.members.get(this.client.user.id).displayColor : 14827841,
+					description: `Unable to identify command. Use ${msg.usage(
 						null, msg.channel.type === 'dm' ? null : undefined, msg.channel.type === 'dm' ? null : undefined
 					)} to view the list of all commands.`
-				);
+				}, '', { reply: msg.author });
 			}
 		} else {
 			const messages = [];
 			try {
-				messages.push(await msg.direct(stripIndents`
-					${oneLine`
-						To run a command in ${msg.guild || 'any server'},
-						use ${Command.usage('command', msg.guild ? msg.guild.commandPrefix : null, this.client.user)}.
-						For example, ${Command.usage('prefix', msg.guild ? msg.guild.commandPrefix : null, this.client.user)}.
-					`}
-					To run a command in this DM, simply use ${Command.usage('command', null, null)} with no prefix.
+				const splitTotal = discord.util.splitMessage(stripIndents`
+				${oneLine`
+					To run a command in ${msg.guild || 'any server'},
+					use ${Command.usage('command', msg.guild ? msg.guild.commandPrefix : null, this.client.user)}.
+					For example, ${Command.usage('prefix', msg.guild ? msg.guild.commandPrefix : null, this.client.user)}.
+				`}
 
-					Use ${this.usage('<command>', null, null)} to view detailed information about a specific command.
-					Use ${this.usage('all', null, null)} to view a list of *all* commands, not just available ones.
+				Use ${this.usage('<command>', null, null)} to view detailed information about a specific command.
+				Use ${this.usage('all', null, null)} to view a list of *all* commands, not just available ones.
 
-					__**${showAll ? 'All commands' : `Available commands in ${msg.guild || 'this DM'}`}**__
+				__**${showAll ? 'All commands' : `Available commands in ${msg.guild || 'this DM'}`}**__
 
-					${(showAll ? groups : groups.filter(grp => grp.commands.some(cmd => cmd.isUsable(msg))))
-						.map(grp => stripIndents`
-							__${grp.name}__
-							${(showAll ? grp.commands : grp.commands.filter(cmd => cmd.isUsable(msg)))
-								.map(cmd => `**${cmd.name}:** ${cmd.description}${cmd.nsfw ? ' (NSFW)' : ''}`).join('\n')
-							}
-						`).join('\n\n')
-					}
-				`, { split: true }));
+				${(showAll ? groups : groups.filter(grp => grp.commands.some(cmd => cmd.isUsable(msg))))
+					.map(grp => stripIndents`
+						__${grp.name}__
+						${(showAll ? grp.commands : grp.commands.filter(cmd => cmd.isUsable(msg)))
+							.map(cmd => `**${cmd.name}:** ${cmd.description}${cmd.nsfw ? ' (NSFW)' : ''}`).join('\n')
+						}
+					`).join('\n\n')
+				}
+			`);
+
+				for(const part in splitTotal) {
+					messages.push(await msg.direct('', { // eslint-disable-line no-await-in-loop
+						embed: {
+							color: msg.guild ? msg.guild.members.get(this.client.user.id).displayColor : 14827841,
+							description: splitTotal[part]
+						}
+					}));
+				}
+
 				if(msg.channel.type !== 'dm') messages.push(await msg.reply('Sent you a DM with information.'));
 			} catch(err) {
 				messages.push(await msg.reply('Unable to send you the help DM. You probably have DMs disabled.'));

@@ -293,6 +293,7 @@ class CommandRegistry {
 	 * - message
 	 * - command
 	 * - group
+	 * - guild
 	 * @return {CommandRegistry}
 	 */
 	registerDefaultTypes() {
@@ -307,6 +308,7 @@ class CommandRegistry {
 			require('./types/channel'),
 			require('./types/message'),
 			require('./types/command'),
+			require('./types/group'),
 			require('./types/group')
 		]);
 		return this;
