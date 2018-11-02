@@ -45,13 +45,14 @@ class Command {
 	 * in the command string.
 	 * @property {RegExp[]} [patterns] - Patterns to use for triggering the command
 	 * @property {boolean} [guarded=false] - Whether the command should be protected from disabling
+	 * @property {boolean} [hidden=false] - Whether the command should be hidden from the help command
 	 */
 
 	/**
 	 * @param {CommandoClient} client - The client the command is for
 	 * @param {CommandInfo} info - The command information
 	 */
-	constructor(client, info) {
+	constructor(client, info) { // eslint-disable-line complexity
 		this.constructor.validateInfo(client, info);
 
 		/**
@@ -168,7 +169,9 @@ class Command {
 		 * The argument collector for the command
 		 * @type {?ArgumentCollector}
 		 */
-		this.argsCollector = info.args ? new ArgumentCollector(client, info.args, info.argsPromptLimit) : null;
+		this.argsCollector = info.args && info.args.length ?
+			new ArgumentCollector(client, info.args, info.argsPromptLimit) :
+			null;
 		if(this.argsCollector && typeof info.format === 'undefined') {
 			this.format = this.argsCollector.args.reduce((prev, arg) => {
 				const wrapL = arg.default !== null ? '[' : '<';
@@ -208,6 +211,12 @@ class Command {
 		this.guarded = Boolean(info.guarded);
 
 		/**
+		 * Whether the command should be hidden from the help command
+		 * @type {boolean}
+		 */
+		this.hidden = Boolean(info.hidden);
+
+		/**
 		 * Whether the command is enabled globally
 		 * @type {boolean}
 		 * @private
@@ -224,7 +233,7 @@ class Command {
 
 	/**
 	 * Checks if the user has permission to use the command
-	 * @param {CommandMessage} message - The triggering command message
+	 * @param {CommandoMessage} message - The triggering command message
 	 * @param {boolean} [ownerOverride=true] - Whether the bot owner(s) will always have permission
 	 * @return {boolean|string} Whether the user has permission, or an error message to respond with if they don't
 	 */
@@ -255,7 +264,7 @@ class Command {
 	// eslint-disable-next-line valid-jsdoc
 	/**
 	 * Runs the command
-	 * @param {CommandMessage} message - The message the command is being run for
+	 * @param {CommandoMessage} message - The message the command is being run for
 	 * @param {Object|string|string[]} args - The arguments for the command, or the matches from a pattern.
 	 * If args is specified on the command, thise will be the argument values object. If argsType is single, then only
 	 * one string will be passed. If multiple, an array of strings will be passed. When fromPattern is true, this is the
@@ -392,17 +401,17 @@ class Command {
 	 */
 	static usage(command, prefix = null, user = null) {
 		const nbcmd = command.replace(/ /g, '\xa0');
-		if(!prefix && !user) return `\`${nbcmd}\``;
+		if(!prefix && !user) return `\`\`${nbcmd}\`\``;
 
 		let prefixPart;
 		if(prefix) {
 			if(prefix.length > 1 && !prefix.endsWith(' ')) prefix += ' ';
 			prefix = prefix.replace(/ /g, '\xa0');
-			prefixPart = `\`${prefix}${nbcmd}\``;
+			prefixPart = `\`\`${prefix}${nbcmd}\`\``;
 		}
 
 		let mentionPart;
-		if(user) mentionPart = `\`@${user.username.replace(/ /g, '\xa0')}#${user.discriminator}\xa0${nbcmd}\``;
+		if(user) mentionPart = `\`\`@${user.username.replace(/ /g, '\xa0')}#${user.discriminator}\xa0${nbcmd}\`\``;
 
 		return `${prefixPart || ''}${prefix && user ? ' or ' : ''}${mentionPart || ''}`;
 	}
