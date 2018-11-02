@@ -17,9 +17,8 @@ module.exports = class PingCommand extends Command {
 
 	async run(msg) {
 		if(!msg.editable) {
-			const pingMsg = await msg.reply('Pinging...');
+			const pingMsg = await msg.say('Pinging...');
 			return pingMsg.edit(oneLine`
-				${msg.channel.type !== 'dm' ? `${msg.author},` : ''}
 				Pong! The message round-trip took ${pingMsg.createdTimestamp - msg.createdTimestamp}ms.
 				${this.client.ping ? `The heartbeat ping is ${Math.round(this.client.ping)}ms.` : ''}
 			`);

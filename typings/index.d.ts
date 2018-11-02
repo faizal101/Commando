@@ -390,6 +390,7 @@ declare module 'discord.js-commando' {
 	export class SyncSQLiteProvider extends SettingProvider {
 		public constructor(db: SyncSQLiteDatabase);
 
+
 		public readonly client: CommandoClient;
 		public db: SyncSQLiteDatabase;
 		private deleteStmt: SyncSQLiteStatement;
@@ -397,6 +398,7 @@ declare module 'discord.js-commando' {
 		private listeners: Map<any, any>;
 		private settings: Map<any, any>;
 
+    
 		public clear(guild: Guild | string): Promise<void>;
 		public destroy(): Promise<void>;
 		public get(guild: Guild | string, key: string, defVal?: any): any;

@@ -33,8 +33,8 @@ module.exports = class PrefixCommand extends Command {
 		// Just output the prefix
 		if(!args.prefix) {
 			const prefix = msg.guild ? msg.guild.commandPrefix : this.client.commandPrefix;
-			return msg.reply(stripIndents`
-				${prefix ? `The command prefix is \`\`${prefix}\`\`.` : 'There is no command prefix.'}
+			return msg.say(stripIndents`
+				${prefix ? `The command prefix is \`${prefix}\`.` : 'There is no command prefix.'}
 				To run commands, use ${msg.anyUsage('command')}.
 			`);
 		}
@@ -42,10 +42,10 @@ module.exports = class PrefixCommand extends Command {
 		// Check the user's permission before changing anything
 		if(msg.guild) {
 			if(!msg.member.hasPermission('ADMINISTRATOR') && !this.client.isOwner(msg.author)) {
-				return msg.reply('Only administrators may change the command prefix.');
+				return msg.say('Only administrators may change the command prefix.');
 			}
 		} else if(!this.client.isOwner(msg.author)) {
-			return msg.reply('Only the bot owner(s) may change the global command prefix.');
+			return msg.say('Only the bot owner(s) may change the global command prefix.');
 		}
 
 		// Save the prefix
@@ -61,7 +61,7 @@ module.exports = class PrefixCommand extends Command {
 			response = prefix ? `Set the command prefix to \`\`${args.prefix}\`\`.` : 'Removed the command prefix entirely.';
 		}
 
-		await msg.reply(`${response} To run commands, use ${msg.anyUsage('command')}.`);
+		await msg.say(`${response} To run commands, use ${msg.anyUsage('command')}.`);
 		return null;
 	}
 };

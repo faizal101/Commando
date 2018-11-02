@@ -38,13 +38,17 @@ module.exports = class EvalCommand extends Command {
 		const lastResult = this.lastResult;
 		const doReply = val => {
 			if(val instanceof Error) {
-				msg.reply(`Callback error: \`${val}\``);
+				msg.say(`Callback error: \`${val}\``);
 			} else {
 				const result = this.makeResultMessages(val, process.hrtime(this.hrStart));
 				if(Array.isArray(result)) {
-					for(const item of result) msg.reply(item);
+					for(const item of result) {
+						if(this.client.options.selfbot) msg.say(item); else msg.say(item);
+					}
+				} else if(this.client.options.selfbot) {
+					msg.say(result);
 				} else {
-					msg.reply(result);
+					msg.say(result);
 				}
 			}
 		};
@@ -57,7 +61,7 @@ module.exports = class EvalCommand extends Command {
 			this.lastResult = eval(args.script);
 			hrDiff = process.hrtime(hrStart);
 		} catch(err) {
-			return msg.reply(`Error while evaluating: \`${err}\``);
+			return msg.say(`Error while evaluating: \`${err}\``);
 		}
 
 		// Prepare for callback time and respond
@@ -66,7 +70,7 @@ module.exports = class EvalCommand extends Command {
 		if(Array.isArray(result)) {
 			return result.map(item => msg.reply(item));
 		} else {
-			return msg.reply(result);
+			return msg.say(result);
 		}
 	}
 
