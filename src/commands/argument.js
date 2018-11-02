@@ -308,7 +308,7 @@ class Argument {
 				if(lc === 'finish') {
 					return {
 						value: results.length > 0 ? results : null,
-						cancelled: results.length > 0 ? null : 'user',
+						cancelled: this.default ? null : results.length > 0 ? null : 'user',
 						prompts,
 						answers
 					};
@@ -351,6 +351,7 @@ class Argument {
 	validate(val, msg) {
 		const valid = this.validator ? this.validator(val, msg, this) : this.type.validate(val, msg, this);
 		if(!valid || typeof valid === 'string') return this.error || valid;
+		if(valid instanceof Promise) return valid.then(vld => !vld || typeof vld === 'string' ? this.error || vld : vld);
 		return valid;
 	}
 
@@ -374,6 +375,7 @@ class Argument {
 	isEmpty(val, msg) {
 		if(this.emptyChecker) return this.emptyChecker(val, msg, this);
 		if(this.type) return this.type.isEmpty(val, msg, this);
+		if(Array.isArray(val)) return val.length === 0;
 		return !val;
 	}
 

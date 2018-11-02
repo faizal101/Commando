@@ -66,21 +66,15 @@ module.exports = class EvalCommand extends Command {
 
 		// Prepare for callback time and respond
 		this.hrStart = process.hrtime();
-		let response = this.makeResultMessages(this.lastResult, hrDiff, args.script, msg.editable);
-		if(msg.editable) {
-			if(response instanceof Array) {
-				if(response.length > 0) response = response.slice(1, response.length - 1);
-				for(const re of response) msg.say(re);
-				return null;
-			} else {
-				return msg.edit(response);
-			}
+		const result = this.makeResultMessages(this.lastResult, hrDiff, args.script);
+		if(Array.isArray(result)) {
+			return result.map(item => msg.reply(item));
 		} else {
-			return msg.say(response);
+			return msg.say(result);
 		}
 	}
 
-	makeResultMessages(result, hrDiff, input = null, editable = false) {
+	makeResultMessages(result, hrDiff, input = null) {
 		const inspected = util.inspect(result, { depth: 0 })
 			.replace(nlPattern, '\n')
 			.replace(this.sensitivePattern, '--snip--');
@@ -94,24 +88,18 @@ module.exports = class EvalCommand extends Command {
 		const append = `\n${appendPart}\n\`\`\``;
 		if(input) {
 			return discord.splitMessage(tags.stripIndents`
-				${editable ? `
-					*Input*
-					\`\`\`javascript
-					${input}
-					\`\`\`` :
-				''}
 				*Executed in ${hrDiff[0] > 0 ? `${hrDiff[0]}s ` : ''}${hrDiff[1] / 1000000}ms.*
 				\`\`\`javascript
 				${inspected}
 				\`\`\`
-			`, 1900, '\n', prepend, append);
+			`, { maxLength: 1900, prepend, append });
 		} else {
 			return discord.splitMessage(tags.stripIndents`
 				*Callback executed after ${hrDiff[0] > 0 ? `${hrDiff[0]}s ` : ''}${hrDiff[1] / 1000000}ms.*
 				\`\`\`javascript
 				${inspected}
 				\`\`\`
-			`, 1900, '\n', prepend, append);
+			`, { maxLength: 1900, prepend, append });
 		}
 	}
 
